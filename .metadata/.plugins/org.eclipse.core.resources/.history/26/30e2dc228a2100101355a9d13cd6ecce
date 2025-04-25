@@ -1,0 +1,22 @@
+package com.danhpiglin.dao;
+
+import com.danhpiglin.config.DBConfig;
+import com.danhpiglin.model.Student;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+public class StudentDAO {
+    public void addStudent(Student student) throws SQLException {
+        String sql = "INSERT INTO SINHVIEN (SoCMND, HoTen, Email, SoDT, DiaChi) VALUES (?, ?, ?, ?, ?)";
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, student.getSoCMND());
+            stmt.setString(2, student.getHoTen());
+            stmt.setString(3, student.getEmail());
+            stmt.setLong(4, student.getSoDT());
+            stmt.setString(5, student.getDiaChi());
+            stmt.executeUpdate();
+        }
+    }
+}

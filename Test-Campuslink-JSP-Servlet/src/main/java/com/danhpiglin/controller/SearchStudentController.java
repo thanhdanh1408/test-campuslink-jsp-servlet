@@ -1,0 +1,41 @@
+package com.danhpiglin.controller;
+
+import com.danhpiglin.dao.StudentDAO;
+import com.danhpiglin.model.Student;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.List;
+
+@WebServlet("/WEB-INF/views/searchStudent")
+public class SearchStudentController extends HttpServlet {
+    private StudentDAO studentDAO;
+
+    @Override
+    public void init() throws ServletException {
+        studentDAO = new StudentDAO();
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        request.getRequestDispatcher("/WEB-INF/views/searchStudent.jsp").forward(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String keyword = request.getParameter("keyword");
+        try {
+            List<Student> students = studentDAO.searchStudents(keyword != null ? keyword : "");
+            request.setAttribute("students", students);
+        } catch (SQLException e) {
+            request.setAttribute("error", "Lỗi khi tìm kiếm: " + e.getMessage());
+        }
+        request.getRequestDispatcher("/WEB-INF/views/resultStudent.jsp").forward(request, response);
+    }
+}

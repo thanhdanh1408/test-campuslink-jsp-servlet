@@ -1,0 +1,62 @@
+package com.danhpiglin.controller;
+
+import com.danhpiglin.dao.StudentDAO;
+import com.danhpiglin.dao.GraduationDAO;
+import com.danhpiglin.dao.JobDAO;
+import com.danhpiglin.model.Student;
+import com.danhpiglin.model.Graduation;
+import com.danhpiglin.model.Job;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+@WebServlet("/WEB-INF/views/searchGraduationJob")
+public class SearchGraduationJobController extends HttpServlet {
+    private StudentDAO studentDAO;
+    private GraduationDAO graduationDAO;
+    private JobDAO jobDAO;
+
+    @Override
+    public void init() throws ServletException {
+        studentDAO = new StudentDAO();
+        graduationDAO = new GraduationDAO();
+        jobDAO = new JobDAO();
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        request.getRequestDispatcher("/WEB-INF/views/searchGraduationJob.jsp").forward(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String keyword = request.getParameter("keyword");
+        try {
+            List<Student> students = studentDAO.searchStudents(keyword != null ? keyword : "");
+            List<Object[]> results = new ArrayList<>();
+            for (Student student : students) {
+                List<Graduation> graduations = graduationDAO.getGraduationsByStudent(student.getSoCMND());
+                List<Job> jobs = jobDAO.getJobsByStudent(student.getSoCMND());
+                for (Graduation grad : graduations) {
+                    for (Job job : jobs) {
+                        results.add(new Object[]{student.getSoCMND(), student.getHoTen(),
+                            grad.getMaNganh(), grad.getMaTruong(), job.getMaNganh(),
+                            job.getTenCongTy(), job.getThoiGianLamViec()});
+                    }
+                }
+            }
+            request.setAttribute("results", results);
+        } catch (SQLException e) {
+            request.setAttribute("error", "Lỗi khi tìm kiếm: " + e.getMessage());
+        }
+        request.getRequestDispatcher("/WEB-INF/views/resultGraduationJob.jsp").forward(request, response);
+    }
+}

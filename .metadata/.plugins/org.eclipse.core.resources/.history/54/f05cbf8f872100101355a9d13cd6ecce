@@ -1,0 +1,26 @@
+package com.danhpiglin.model;
+
+import java.util.Date;
+
+public class Graduation {
+    private long soCMND;
+    private int maTruong;
+    private int maNganh;
+    private String heTN;
+    private Date ngayTN;
+    private String loaiTN;
+
+    // Getters and Setters
+    public long getSoCMND() { return soCMND; }
+    public void setSoCMND(long soCMND) { this.soCMND = soCMND; }
+    public int getMaTruong() { return maTruong; }
+    public void setMaTruong(int maTruong) { this.maTruong = maTruong; }
+    public int getMaNganh() { return maNganh; }
+    public void setMaNganh(int maNganh) { this.maNganh = maNganh; }
+    public String getHeTN() { return heTN; }
+    public void setHeTN(String heTN) { this.heTN = heTN; }
+    public Date getNgayTN() { return ngayTN; }
+    public void setNgayTN(Date ngayTN) { this.ngayTN = ngayTN; }
+    public String getLoaiTN() { return loaiTN; }
+    public void setLoaiTN(String loaiTN) { this.loaiTN = loaiTN; }
+}

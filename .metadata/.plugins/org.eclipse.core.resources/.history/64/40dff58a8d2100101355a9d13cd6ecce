@@ -1,0 +1,109 @@
+package com.danhpiglin.controller;
+
+import com.danhpiglin.dao.GraduationDAO;
+import com.danhpiglin.dao.MajorDAO;
+import com.danhpiglin.dao.SchoolDAO;
+import com.danhpiglin.dao.StudentDAO;
+import com.danhpiglin.model.Graduation;
+import com.danhpiglin.model.Student;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import com.danhpiglin.util.CommonUtils;
+
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.sql.SQLException;
+
+@WebServlet("/addStudent")
+public class StudentController extends HttpServlet {
+    private StudentDAO studentDAO;
+    private GraduationDAO graduationDAO;
+    private SchoolDAO schoolDAO;
+    private MajorDAO majorDAO;
+
+    @Override
+    public void init() throws ServletException {
+        studentDAO = new StudentDAO();
+        graduationDAO = new GraduationDAO();
+        schoolDAO = new SchoolDAO();
+        majorDAO = new MajorDAO();
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            request.setAttribute("schools", schoolDAO.getAllSchools());
+            request.setAttribute("majors", majorDAO.getAllMajors());
+        } catch (SQLException e) {
+            request.setAttribute("error", "Lỗi khi lấy danh sách trường/ngành: " + e.getMessage());
+        }
+        request.getRequestDispatcher("/views/addStudent.jsp").forward(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        // Lấy dữ liệu từ form
+        String soCMNDStr = request.getParameter("soCMND");
+        String hoTen = request.getParameter("hoTen");
+        String email = request.getParameter("email");
+        String soDTStr = request.getParameter("soDT");
+        String diaChi = request.getParameter("diaChi");
+        String maTruongStr = request.getParameter("maTruong");
+        String maNganhStr = request.getParameter("maNganh");
+        String heTN = request.getParameter("heTN");
+        String ngayTN = request.getParameter("ngayTN");
+        String loaiTN = request.getParameter("loaiTN");
+
+        // Kiểm tra các trường bắt buộc
+        if (soCMNDStr == null || soCMNDStr.isEmpty() ||
+            maTruongStr == null || maTruongStr.isEmpty() ||
+            maNganhStr == null || maNganhStr.isEmpty()) {
+            request.setAttribute("error", "Vui lòng điền đầy đủ các trường bắt buộc (Số CMND, Trường, Ngành)!");
+            doGet(request, response);
+            return;
+        }
+
+        // Kiểm tra ngày tốt nghiệp hợp lệ
+        if (!CommonUtils.isValidDate(ngayTN)) {
+            request.setAttribute("error", "Ngày tốt nghiệp không hợp lệ (định dạng: yyyy-MM-dd)!");
+            doGet(request, response);
+            return;
+        }
+
+        try {
+            // Tạo đối tượng Student
+            Student student = new Student();
+            student.setSoCMND(Long.parseLong(soCMNDStr));
+            student.setHoTen(hoTen);
+            student.setEmail(email);
+            student.setSoDT(soDTStr != null && !soDTStr.isEmpty() ? Long.parseLong(soDTStr) : 0);
+            student.setDiaChi(diaChi);
+
+            // Tạo đối tượng Graduation
+            Graduation graduation = new Graduation();
+            graduation.setSoCMND(Long.parseLong(soCMNDStr));
+            graduation.setMaTruong(Integer.parseInt(maTruongStr));
+            graduation.setMaNganh(Integer.parseInt(maNganhStr));
+            graduation.setHeTN(heTN);
+            graduation.setNgayTN(new SimpleDateFormat("yyyy-MM-dd").parse(ngayTN));
+            graduation.setLoaiTN(loaiTN);
+
+            // Lưu vào cơ sở dữ liệu
+            studentDAO.addStudent(student);
+            graduationDAO.addGraduation(graduation);
+
+            request.setAttribute("message", "Thêm thông tin sinh viên thành công!");
+        } catch (SQLException e) {
+            request.setAttribute("error", "Lỗi khi lưu dữ liệu: " + e.getMessage());
+        } catch (Exception e) {
+            request.setAttribute("error", "Lỗi dữ liệu: " + e.getMessage());
+        }
+
+        doGet(request, response);
+    }
+}

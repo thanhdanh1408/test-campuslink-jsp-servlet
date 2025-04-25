@@ -1,0 +1,24 @@
+package com.danhpiglin.dao;
+
+import com.danhpiglin.config.DBConfig;
+import com.danhpiglin.model.Graduation;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Date;
+
+public class GraduationDAO {
+    public void addGraduation(Graduation graduation) throws SQLException {
+        String sql = "INSERT INTO TOT_NGHIEP (SoCMND, MaTruong, MaNganh, HeTN, NgayTN, LoaiTN) VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, graduation.getSoCMND());
+            stmt.setInt(2, graduation.getMaTruong());
+            stmt.setInt(3, graduation.getMaNganh());
+            stmt.setString(4, graduation.getHeTN());
+            stmt.setDate(5, new Date(graduation.getNgayTN().getTime()));
+            stmt.setString(6, graduation.getLoaiTN());
+            stmt.executeUpdate();
+        }
+    }
+}

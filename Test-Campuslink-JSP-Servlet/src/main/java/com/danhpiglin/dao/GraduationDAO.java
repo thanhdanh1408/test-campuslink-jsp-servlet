@@ -1,0 +1,49 @@
+package com.danhpiglin.dao;
+
+import com.danhpiglin.config.DBConfig;
+import com.danhpiglin.model.Graduation;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.sql.Date;
+
+public class GraduationDAO {
+    public void addGraduation(Graduation graduation) throws SQLException {
+        String sql = "INSERT INTO TOT_NGHIEP (SoCMND, MaTruong, MaNganh, HeTN, NgayTN, LoaiTN) VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, graduation.getSoCMND());
+            stmt.setInt(2, graduation.getMaTruong());
+            stmt.setInt(3, graduation.getMaNganh());
+            stmt.setString(4, graduation.getHeTN());
+            stmt.setDate(5, new Date(graduation.getNgayTN().getTime()));
+            stmt.setString(6, graduation.getLoaiTN());
+            stmt.executeUpdate();
+        }
+    }
+    
+    public List<Graduation> getGraduationsByStudent(long soCMND) throws SQLException {
+        List<Graduation> graduations = new ArrayList<>();
+        String sql = "SELECT * FROM TOT_NGHIEP WHERE SoCMND = ?";
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, soCMND);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Graduation grad = new Graduation();
+                    grad.setSoCMND(rs.getLong("SoCMND"));
+                    grad.setMaTruong(rs.getInt("MaTruong"));
+                    grad.setMaNganh(rs.getInt("MaNganh"));
+                    grad.setHeTN(rs.getString("HeTN"));
+                    grad.setNgayTN(rs.getDate("NgayTN"));
+                    grad.setLoaiTN(rs.getString("LoaiTN"));
+                    graduations.add(grad);
+                }
+            }
+        }
+        return graduations;
+    }
+}
